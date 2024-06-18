@@ -1,10 +1,12 @@
+require_relative 'linked_list'
+
 class HashMap
-  attr_accessor :bucket
+  attr_accessor :buckets
   attr_reader :size
 
   def initialize(size = 16)
     @size = size
-    @bucket = Array.new(size)
+    @buckets = Array.new(size) { LinkedList.new }
   end
 
   def hash(key)
@@ -20,6 +22,11 @@ class HashMap
     hash_code = hash(key)
     index = hash_code % size
 
-    bucket[index] = value
+    if buckets[index].head.nil?
+      buckets[index].prepend(key, value)
+    # elsif buckets[index].has?(key)
+    else
+      buckets[index].append(key, value)
+    end
   end
 end
