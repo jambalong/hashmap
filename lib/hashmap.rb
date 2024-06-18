@@ -63,4 +63,9 @@ class HashMap
   def length
     @count
   end
+
+  def clear
+    @buckets.map! { nil }
+    nil
+  end
 end
