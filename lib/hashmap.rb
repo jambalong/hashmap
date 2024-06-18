@@ -43,4 +43,17 @@ class HashMap
 
     !buckets[index].head.nil?
   end
+
+  def remove(key)
+    hash_code = hash(key)
+    index = hash_code % size
+
+    if has?(key)
+      result = buckets[index]
+      buckets[index] = nil
+      result
+    else
+      nil
+    end
+  end
 end
