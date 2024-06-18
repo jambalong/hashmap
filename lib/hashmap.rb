@@ -36,4 +36,11 @@ class HashMap
 
     buckets[index]
   end
+
+  def has?(key)
+    hash_code = hash(key)
+    index = hash_code % size
+
+    !buckets[index].head.nil?
+  end
 end
