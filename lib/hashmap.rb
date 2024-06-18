@@ -29,4 +29,11 @@ class HashMap
       buckets[index].append(key, value)
     end
   end
+
+  def get(key)
+    hash_code = hash(key)
+    index = hash_code % size
+
+    buckets[index]
+  end
 end
