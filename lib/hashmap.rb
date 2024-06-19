@@ -82,4 +82,9 @@ class HashMap
     @buckets.each { |bucket| array << bucket&.head&.value }
     array.compact
   end
+
+  def entries
+    key_value_pair = ->(bucket) { [bucket&.head&.key, bucket&.head&.value] }
+    @buckets.map(&key_value_pair).reject { |pair| pair.include?(nil) }
+  end
 end
