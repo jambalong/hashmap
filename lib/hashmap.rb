@@ -6,7 +6,7 @@ class HashMap
 
   def initialize(size = 16)
     @size = size
-    @buckets = Array.new(size) { LinkedList.new }
+    @buckets = Array.new(size)
     @count = 0
   end
 
@@ -22,6 +22,8 @@ class HashMap
   def set(key, value)
     hash_code = hash(key)
     index = hash_code % size
+
+    buckets[index] = LinkedList.new if buckets[index].nil?
 
     if buckets[index].head.nil?
       buckets[index].prepend(key, value)
@@ -43,7 +45,7 @@ class HashMap
     hash_code = hash(key)
     index = hash_code % size
 
-    !buckets[index].head.nil?
+    !buckets[index]&.head.nil?
   end
 
   def remove(key)
@@ -67,5 +69,11 @@ class HashMap
   def clear
     @buckets.map! { nil }
     nil
+  end
+
+  def keys
+    array = []
+    @buckets.each { |bucket| array << bucket&.head&.key }
+    array.compact
   end
 end
