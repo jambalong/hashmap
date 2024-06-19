@@ -1,5 +1,8 @@
+# frozen_string_literal: true
+
 require_relative 'linked_list'
 
+# This is a HashMap Data Structure class
 class HashMap
   attr_reader :size
   attr_accessor :buckets, :length
@@ -50,7 +53,7 @@ class HashMap
     self.length = 0
 
     self.buckets = Array.new(size * 2)
-    old_entries.each { |key, value| set(key, value)}
+    old_entries.each { |key, value| set(key, value) }
 
     self
   end
@@ -69,16 +72,13 @@ class HashMap
 
   def remove(key)
     hash = hash(key)
-    index = hash % size
 
-    if has?(key)
-      result = buckets[hash]
-      buckets[hash] = nil
-      self.length -= 1
-      result
-    else
-      nil
-    end
+    return unless has?(key)
+
+    result = buckets[hash]
+    buckets[hash] = nil
+    self.length -= 1
+    result
   end
 
   def clear

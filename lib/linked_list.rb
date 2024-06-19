@@ -68,8 +68,8 @@ class LinkedList
     nil
   end
 
-  def to_s(node = head, string = '')
-    "#{node.value}"
+  def to_s(node = head, _string = '')
+    node.value.to_s
   end
 
   def insert_at(key, value, index, new_node = Node.new(key, value))
