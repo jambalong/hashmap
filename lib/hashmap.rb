@@ -76,4 +76,10 @@ class HashMap
     @buckets.each { |bucket| array << bucket&.head&.key }
     array.compact
   end
+
+  def values
+    array = []
+    @buckets.each { |bucket| array << bucket&.head&.value }
+    array.compact
+  end
 end
