@@ -2,12 +2,14 @@ require_relative 'linked_list'
 
 class HashMap
   attr_reader :size
-  attr_accessor :buckets
+  attr_accessor :buckets, :length
+
+  LOAD_FACTOR = 0.75
 
   def initialize(size = 16)
     @size = size
     @buckets = Array.new(size)
-    @count = 0
+    @length = 0
   end
 
   def hash(key)
@@ -16,75 +18,96 @@ class HashMap
 
     key.each_char { |char| hash_code = prime_number * hash_code + char.ord }
 
-    hash_code
+    hash_code % size
   end
 
   def set(key, value)
-    hash_code = hash(key)
-    index = hash_code % size
+    hash = hash(key)
 
-    buckets[index] = LinkedList.new if buckets[index].nil?
+    buckets[hash] ||= LinkedList.new
 
-    if buckets[index].head.nil?
-      buckets[index].prepend(key, value)
-      @count += 1
-    # elsif buckets[index].has?(key)
+    index = buckets[hash].find(key)
+
+    if index
+      buckets[hash].insert_at(key, value, index)
+    elsif load_factor?
+      grow_size
+      set(key, value)
     else
-      buckets[index].append(key, value)
+      buckets[hash].append(key, value)
+      self.length += 1
     end
   end
 
-  def get(key)
-    hash_code = hash(key)
-    index = hash_code % size
+  def load_factor?
+    return true if (length / size) > LOAD_FACTOR
 
-    buckets[index]
+    false
+  end
+
+  def grow_size
+    old_entries = entries
+    self.length = 0
+
+    self.buckets = Array.new(size * 2)
+    old_entries.each { |key, value| set(key, value)}
+
+    self
+  end
+
+  def get(key)
+    hash = hash(key)
+
+    buckets[hash]
   end
 
   def has?(key)
-    hash_code = hash(key)
-    index = hash_code % size
+    hash = hash(key)
 
-    !buckets[index]&.head.nil?
+    !buckets[hash]&.head.nil?
   end
 
   def remove(key)
-    hash_code = hash(key)
-    index = hash_code % size
+    hash = hash(key)
+    index = hash % size
 
     if has?(key)
-      result = buckets[index]
-      buckets[index] = nil
-      @count -= 1
+      result = buckets[hash]
+      buckets[hash] = nil
+      self.length -= 1
       result
     else
       nil
     end
   end
 
-  def length
-    @count
-  end
-
   def clear
-    @buckets.map! { nil }
+    buckets.map! { nil }
+    self.length = 0
+
     nil
   end
 
   def keys
-    array = []
-    @buckets.each { |bucket| array << bucket&.head&.key }
-    array.compact
+    keys = []
+    buckets.each { |bucket| keys << bucket&.head&.key }
+
+    keys.compact
   end
 
   def values
-    array = []
-    @buckets.each { |bucket| array << bucket&.head&.value }
-    array.compact
+    values = []
+    buckets.each { |bucket| values << bucket&.head&.value }
+
+    values.compact
   end
 
   def entries
-    key_value_pair = ->(bucket) { [bucket&.head&.key, bucket&.head&.value] }
-    @buckets.map(&key_value_pair).reject { |pair| pair.include?(nil) }
+    entries = ->(bucket) { [bucket&.head&.key, bucket&.head&.value] }
+    buckets.map(&entries).reject { |entry| entry.include?(nil) }
+  end
+
+  def to_s
+    buckets.each { |bucket| puts bucket }
   end
 end

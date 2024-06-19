@@ -51,15 +51,15 @@ class LinkedList
     node.next_node.tap { node.next_node = nil }
   end
 
-  def contains?(value)
-    find(value) ? true : false
+  def contains?(key)
+    find(key) ? true : false
   end
 
-  def find(value, node = head, index = 0)
+  def find(key, node = head, index = 0)
     return nil if head.nil?
 
     while node
-      return index if node.value == value
+      return index if node.key == key
 
       node = node.next_node
       index += 1
@@ -69,12 +69,7 @@ class LinkedList
   end
 
   def to_s(node = head, string = '')
-    while node
-      string += "#{node.value} -> "
-      node = node.next_node
-    end
-
-    string + 'nil'
+    "#{node.value}"
   end
 
   def insert_at(key, value, index, new_node = Node.new(key, value))
