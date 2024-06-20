@@ -16,95 +16,76 @@ class HashMap
   end
 
   def hash(key)
-    hash_code = 0
-    prime_number = 31
-
-    key.each_char { |char| hash_code = prime_number * hash_code + char.ord }
-
-    hash_code % size
+    key.each_char.reduce(0) { |hash, char| 31 * hash + char.ord } % size
   end
 
   def set(key, value)
-    hash = hash(key)
-
-    buckets[hash] ||= LinkedList.new
-
-    index = buckets[hash].find(key)
+    list = buckets[hash(key)] ||= LinkedList.new
+    index = list.find(key)
 
     if index
-      buckets[hash].insert_at(key, value, index)
+      list.insert_at(key, value, index)
     elsif load_factor?
       grow_size
       set(key, value)
     else
-      buckets[hash].append(key, value)
+      list.append(key, value)
       self.length += 1
     end
   end
 
-  def load_factor?
-    return true if (length / size) > LOAD_FACTOR
-
-    false
-  end
-
-  def grow_size
-    old_entries = entries
-    self.length = 0
-
-    self.buckets = Array.new(size * 2)
-    old_entries.each { |key, value| set(key, value) }
-
-    self
-  end
-
   def get(key)
-    hash = hash(key)
-
-    buckets[hash]
+    buckets[hash(key)]
   end
 
   def has?(key)
-    hash = hash(key)
-
-    !buckets[hash]&.head.nil?
+    !buckets[hash(key)]&.head.nil?
   end
 
   def remove(key)
-    hash = hash(key)
-
     return unless has?(key)
 
-    result = buckets[hash]
-    buckets[hash] = nil
-    self.length -= 1
-    result
+    hash = hash(key)
+    buckets[hash].tap do
+      buckets[hash] = nil
+      self.length -= 1
+    end
   end
 
   def clear
-    buckets.map! { nil }
+    self.buckets = Array.new(size)
     self.length = 0
 
     nil
   end
 
   def keys
-    keys = []
-    buckets.each { |bucket| keys << bucket&.head&.key }
-
-    keys.compact
+    buckets.map { |bucket| bucket&.head&.key }.compact
   end
 
   def values
-    values = []
-    buckets.each { |bucket| values << bucket&.head&.value }
-
-    values.compact
+    buckets.map { |bucket| bucket&.head&.value }.compact
   end
 
   def entries
     entries = ->(bucket) { [bucket&.head&.key, bucket&.head&.value] }
     buckets.map(&entries).reject { |entry| entry.include?(nil) }
+  end
+
+  private
+
+  def grow_size
+    old_entries = entries
+    self.buckets = Array.new(size * 2)
+    self.length = 0
+
+    old_entries.each { |key, value| set(key, value) }
+
+    self
+  end
+
+  def load_factor?
+    (length / size) > LOAD_FACTOR
   end
 
   def to_s
